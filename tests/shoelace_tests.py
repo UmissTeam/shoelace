@@ -15,6 +15,9 @@ class TestSensor(Sensor):
         self.critical_event = True
         self.alert_triggered = False
 
+    def push_callback(self, item):
+        pass
+
 class ShoelaceTests(TestCase):
     def setUp(self):
         pass

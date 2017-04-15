@@ -1,53 +1,6 @@
-from abc import ABCMeta, abstractmethod
-from collections import deque
-
-class Sensor(metaclass=ABCMeta):
-    """Sensor abstract class.
-    To implement a new sensor, just:
-        (i) inherit from Sensor class
-        (ii) implement limiar, maxitems and alert_callback methods
-    OBS: set alert_triggered attribute to False inside alert_callback!!!
-    """
-    def __init__(self):
-        self.collection = deque()
-        self.lowest_value = 0xffffff
-        self.highest_value = -1
-        self.alert_triggered = False
-
-    @classmethod
-    @abstractmethod
-    def maxitems(cls):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def limiar(cls):
-        pass
-
-    def alert(self):
-        while (self.alert_triggered == True):
-            self.alert_callback()
-
-    @abstractmethod
-    def alert_callback(self):
-        pass
-
-    def diff(self, val1, val2):
-        maxv = max(val1, val2)
-        minv = min(val1, val2)
-        return 100. - 100.*minv/maxv
-
-    def push(self, item):
-        self.lowest_value = min(self.lowest_value, item)
-        self.highest_value = max(self.highest_value, item)
-        if (len(self.collection) > self.maxitems()):
-            diff1 = self.diff(self.lowest_value, item)
-            diff2 = self.diff(self.highest_value, item)
-            if ((diff1 > self.limiar()) or (diff2 > self.limiar())):
-                self.alert_triggered = True
-                self.alert()
-            self.collection.popleft()
-        self.collection.append(item)
+from shoelace.core import Sensor
+import requests
+from shoelace.config import env
 
 class TemperatureSensor(Sensor):
     """Temperature Sensor class
@@ -66,4 +19,17 @@ class TemperatureSensor(Sensor):
     def alert_callback(self):
         self.alert_triggered = False
 
-Sensor.register(TemperatureSensor)
+    def push_callback(self, item):
+        url = env['server_address'] + '/components'
+        data = {
+            'data': {
+                'location': {
+                    "value": [-23.557620375, -46.735339374999995],
+                    "timestamp": "2017-04-15T16:03:02-03:00",
+                    "bus_id": "82409"
+                }
+            },
+            "id": "2a50ed17-2a7e-4db3-9af6-f9b9b9cd6afd"
+        }
+        print("DATA => ", data)
+        requests.post(url, data=data)
