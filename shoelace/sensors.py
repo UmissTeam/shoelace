@@ -6,30 +6,64 @@ class TemperatureSensor(Sensor):
     """Temperature Sensor class
     Usage:
         >>> temp_sens = TemperatureSensor()
-        >>> temp_sens.push(2)
+        >>> temp_sens.push(111)
     """
     @classmethod
     def limiar(cls):
         return 5
 
-    @classmethod
-    def maxitems(cls):
-        return 20
+    def push_callback(self, item):
+        url = "http://localhost:8000/api/skin_temperatures"
+        if (self.diff(item, self.last_sended) > TemperatureSensor.limiar()):
+            print("sending...")
+            self.last_sended = item
+            data = {
+                'temperature': item
+            }
+            r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
+        else:
+            print("skip...")
 
-    def alert_callback(self):
-        self.alert_triggered = False
+class GRSensor(Sensor):
+    """Galvanic Resistance Sensor class
+    Usage:
+        >>> grs = GRSensor()
+        >>> grs.push(150)
+    """
+    @classmethod
+    def limiar(cls):
+        return 5
 
     def push_callback(self, item):
-        url = env['server_address'] + '/components'
-        data = {
-            'data': {
-                'location': {
-                    "value": [-23.557620375, -46.735339374999995],
-                    "timestamp": "2017-04-15T16:03:02-03:00",
-                    "bus_id": "82409"
-                }
-            },
-            "id": "2a50ed17-2a7e-4db3-9af6-f9b9b9cd6afd"
-        }
-        print("DATA => ", data)
-        requests.post(url, data=data)
+        url = "http://localhost:8000/api/galvanic_resistances"
+        if (self.diff(item, self.last_sended) > GRSensor.limiar()):
+            print("sending...")
+            self.last_sended = item
+            data = {
+                'resistance': item
+            }
+            r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
+        else:
+            print("skip...")
+
+class HBSensor(Sensor):
+    """HeartBeats Sensor class
+    Usage:
+        >>> hbs = HBSensor()
+        >>> hbs.push(150)
+    """
+    @classmethod
+    def limiar(cls):
+        return 5
+
+    def push_callback(self, item):
+        url = "http://localhost:8000/api/heart_beats"
+        if (self.diff(item, self.last_sended) > HBSensor.limiar()):
+            print("sending...")
+            self.last_sended = item
+            data = {
+                'beats': item
+            }
+            r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
+        else:
+            print("skip...")
