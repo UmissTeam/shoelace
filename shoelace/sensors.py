@@ -13,7 +13,7 @@ class TemperatureSensor(Sensor):
         return 5
 
     def push_callback(self, item):
-        url = "http://localhost:8000/api/skin_temperatures"
+        url = env["server_address"]+"/api/skin_temperatures"
         if (self.diff(item, self.last_sended) > TemperatureSensor.limiar()):
             print("sending...")
             self.last_sended = item
@@ -35,7 +35,7 @@ class GRSensor(Sensor):
         return 5
 
     def push_callback(self, item):
-        url = "http://localhost:8000/api/galvanic_resistances"
+        url = env["server_address"]+"/api/galvanic_resistances"
         if (self.diff(item, self.last_sended) > GRSensor.limiar()):
             print("sending...")
             self.last_sended = item
@@ -57,7 +57,7 @@ class HBSensor(Sensor):
         return 5
 
     def push_callback(self, item):
-        url = "http://localhost:8000/api/heart_beats"
+        url = env["server_address"]+"/api/heart_beats"
         if (self.diff(item, self.last_sended) > HBSensor.limiar()):
             print("sending...")
             self.last_sended = item
