@@ -43,7 +43,7 @@ if (register_sensor(sensors)):
 
         TEMPERATURE = TEMPERATURE - 273.15 #Convert Kelvin to Celsius
         print(TEMPERATURE)
-            time.sleep(0.5) #Pause for 0.5 second
+        time.sleep(0.5) #Pause for 0.5 second
 
 else:
     print("Try again later! >:|")

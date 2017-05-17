@@ -1,3 +1,3 @@
 env = {
-    'server_address': 'http://localhost:8000'
+    'server_address': 'http://104.196.160.171'
 }
