@@ -2,6 +2,7 @@ from shoelace.sensors import TemperatureSensor, GRSensor, HBSensor
 import requests
 import os
 from shoelace.config import env
+import Adafruit_ADS1x15
 
 def register_sensor(sensors):
     if (os.environ.get("UMISS_TOKEN") and os.environ.get("UMISS_PASSWORD")):
@@ -25,19 +26,25 @@ grs = GRSensor()
 hbs = HBSensor()
 sensors = [temp_sens, grs, hbs]
 
+THERM_CHANNEL = 0 #Thermistor ADS Channel
+SERIES_RESISTANCE = 10000 #Series resistance from the circuit
+ADS_RESOLUTION = 65536 # ADC 16 bits resolution (2**16)
+GAIN = 1 #Read voltages between -4.096 and +4.096
+THERM_A = 0.001129148 #STEINHART-HART A coefficient
+THERM_B = 0.000234125 #STEINHART-HART B coefficient
+THERM_C = 0.0000000876741 #STEINHART-HART C coefficient
+
 if (register_sensor(sensors)):
-    val = 101
-    print("VAL => ", val)
-    temp_sens.push(val)
-    val = 102
-    print("VAL => ", val)
-    temp_sens.push(val)
-    val = 103
-    print("VAL => ", val)
-    temp_sens.push(val)
-    val = 150
-    print("VAL => ", val)
-    temp_sens.push(val)
+    while True:
+        THERM_READING = adc.read_adc(THERM_CHANNEL, gain=GAIN) #Reading values from the ADS
+        THERM_RESISTANCE = ((ADS_RESOLUTION/THERM_READING) - SERIES_RESISTANCE) #Calculates the Thermistor resistance
+        TEMPERATURE = math.log(THERM_RESISTANCE)
+        TEMPERATURE = 1 / (THERM_A + (THERM_B * TEMPERATURE) + (THERM_C * TEMPERATURE * TEMPERATURE * TEMPERATURE))
+
+        TEMPERATURE = TEMPERATURE - 273.15 #Convert Kelvin to Celsius
+        print(TEMPERATURE)
+            time.sleep(0.5) #Pause for 0.5 second
+
 else:
     print("Try again later! >:|")
 
