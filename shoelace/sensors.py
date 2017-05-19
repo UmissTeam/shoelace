@@ -13,16 +13,15 @@ class TemperatureSensor(Sensor):
         return 5
 
     def steinhart_hart(self, temp):
-        series_resistance = 10000 #Series resistance from the circuit
-        ads_resolution = 65536 # ADC 16 bits resolution (2**16)
-        GAIN = 1 #Read voltages between -4.096 and +4.096
+        series_resistance = 10000. #Series resistance from the circuit
+        ads_resolution = 65536. # ADC 16 bits resolution (2**16)
         coeff_a = 0.001129148 #STEINHART-HART A coefficient
         coeff_b = 0.000234125 #STEINHART-HART B coefficient
         coeff_c = 0.0000000876741 #STEINHART-HART C coefficient
         therm_resistance = ((ads_resolution/temp) - series_resistance)
         therm_resistance = ((ads_resolution/therm_reading) - series_resistance) #cALCULATES THE tHERMISTOR RESISTANCE
         ln_temp = math.log(therm_resistance)
-        return (1. / (coeff_a + (coeff_b * ln_temp) + (coeff_c * ln_temp * ln_temp * ln_temp))) - 273.15
+        return (1. / (coeff_a + (coeff_b * ln_temp) + (coeff_c * (ln_temp**3) ))) - 273.15
 
     def push_callback(self, item):
         item = self.steinhart_hart(item)

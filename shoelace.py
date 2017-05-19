@@ -3,7 +3,11 @@ import requests
 import os
 from shoelace.config import env
 import time
-# import Adafruit_ADS1x15
+
+try:
+    import Adafruit_ADS1x15
+except ImportError:
+    TEST_ENVIRONMENT = True
 
 def register_sensor(sensors):
     if (os.environ.get("UMISS_TOKEN") and os.environ.get("UMISS_PASSWORD")):
@@ -22,9 +26,9 @@ def register_sensor(sensors):
     else:
         print("Missing tokens")
 
-temp_sens = TemperatureSensor()
-grs = GRSensor()
-hbs = HBSensor()
+temp_sens = TemperatureSensor(TEST_ENVIRONMENT)
+grs = GRSensor(TEST_ENVIRONMENT)
+hbs = HBSensor(TEST_ENVIRONMENT)
 sensors = [temp_sens, grs, hbs]
 
 if (register_sensor(sensors)):
