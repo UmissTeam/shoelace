@@ -1,6 +1,7 @@
 from shoelace.core import Sensor
 import requests
 from shoelace.config import env
+import math
 
 class TemperatureSensor(Sensor):
     """Temperature Sensor class
@@ -10,24 +11,28 @@ class TemperatureSensor(Sensor):
     """
     @classmethod
     def limiar(cls):
-        return 5
+        return 10
 
     def steinhart_hart(self, temp):
+        print("TEMP AKI => ", temp)
         series_resistance = 10000. #Series resistance from the circuit
         ads_resolution = 65536. # ADC 16 bits resolution (2**16)
         coeff_a = 0.001129148 #STEINHART-HART A coefficient
         coeff_b = 0.000234125 #STEINHART-HART B coefficient
         coeff_c = 0.0000000876741 #STEINHART-HART C coefficient
-        therm_resistance = ((ads_resolution/temp) - series_resistance)
-        therm_resistance = ((ads_resolution/therm_reading) - series_resistance) #cALCULATES THE tHERMISTOR RESISTANCE
-        ln_temp = math.log(therm_resistance)
-        return (1. / (coeff_a + (coeff_b * ln_temp) + (coeff_c * (ln_temp**3) ))) - 273.15
+        therm_resistance = abs(((ads_resolution/temp) - series_resistance))
+        ln_temp = math.log1p(therm_resistance)
+        # print("LN_TEMP => ", ln_temp)
+        return (1. / (coeff_a + (coeff_b * ln_temp) + (coeff_c * ln_temp**3 ))) - 273.15
 
     def push_callback(self, item):
-        item = self.steinhart_hart(item)
+        #item = self.steinhart_hart(item)
         url = env["server_address"]+"/api/skin_temperatures"
-        item = 35
         if (self.diff(item, self.last_sended) > TemperatureSensor.limiar()):
+            print("SAIDA ANTES =>", item)
+            item = int(item)
+            #item += 10
+            print("ITEM =>", item)
             self.last_sended = item
             data = {
                 'temperature': item
