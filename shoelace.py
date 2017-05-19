@@ -4,6 +4,8 @@ import os
 from shoelace.config import env
 import time
 
+TEST_ENVIRONMENT = False
+
 try:
     import Adafruit_ADS1x15
 except ImportError:
