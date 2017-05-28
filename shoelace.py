@@ -1,4 +1,4 @@
-from shoelace.sensors import TemperatureSensor, GRSensor, HBSensor
+from shoelace.sensors import TemperatureSensor, GRSensor, HBSensor, FallSensor
 import requests
 import os
 from shoelace.config import env
@@ -31,31 +31,43 @@ def register_sensor(sensors):
 
 temp_sens = TemperatureSensor()
 grs = GRSensor()
+fall = FallSensor()
 hbs = HBSensor()
-sensors = [temp_sens, grs, hbs]
+sensors = [temp_sens, grs, fall]
 
 adc = Adafruit_ADS1x15.ADS1115()
 GAIN = 1
 
+def collect_temperature_sensor():
+    temperature_samples = 100
+    lm35_adc_sum = 0.0
+    for i in range(0, temperature_samples):
+        lm35_adc = adc.read_adc(0, gain=GAIN)
+        lm35_adc_sum += lm35_adc
+    lm35_adc_avg = lm35_adc_sum/temperature_samples
+    return lm35_adc_avg
+
+def collect_fall_sensor():
+    fall_sum = 0.0
+    samples = 10
+    fall_sum = 0.0
+    for i in range(0, samples):
+        fall_value = adc.read_adc(2, gain = GAIN)
+        fall_sum += fall_value
+    return fall_sum/samples
+
+def collect_gsr_sensor():
+    samples = 10
+    gsr_sum = 0.0
+    for i in range(0, samples):
+        gsr_value = adc.read_adc(1, gain=GAIN)/100.
+        gsr_sum += gsr_value
+    return gsr_sum/samples #Filter average from gsr samples
+
 if (register_sensor(sensors)):
     while True:
-        therm = adc.read_adc(0, gain=GAIN)
-        volts = (therm * 3.3) / 65536.
-        ohms = ((volts)*3300.)-1000.
-        print("OHMS => ", ohms)
-        lnohm = math.log1p(ohms)
-        a = 0.001129148 #STEINHART-HART A coefficient
-        b = 0.000234125 #STEINHART-HART B coefficient
-        c = 0.0000000876741 #STEINHART-HART C coefficient
-        t1 = (b*lnohm) 
-        t2 = math.pow(lnohm,3)
-        t2 *= c
-        temp = 1./(a + t1 + t2)
-        tempc = temp - 273.15 - 66.2
-        print ("%4d/1023 => %5.3f V => %4.1f Ω => %4.1f °K => %4.1f °C from adc" % (therm, volts, ohms, temp, tempc))
-        temp_sens.push(tempc)
-        time.sleep(0.5) #Pause for 0.5 second
-
+        sensors[0].push(collect_temperature_sensor()) # 0
+        sensors[1].push(collect_gsr_sensor()) # 1
+        sensors[2].push(collect_fall_sensor()) # 2
 else:
     print("Try again later! >:|")
-
