@@ -26,3 +26,4 @@ class Sensor(metaclass=ABCMeta):
 
     def push(self, item):
         self.push_callback(item)
+
