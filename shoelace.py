@@ -14,10 +14,11 @@ except ImportError:
 
 def register_sensor(sensors):
     if (os.environ.get("UMISS_TOKEN") and os.environ.get("UMISS_PASSWORD")):
-        login = os.environ["UMISS_TOKEN"]
+        login = "patient_7D23B6"
         password = os.environ["UMISS_PASSWORD"]
-        signup_url = env["server_address"]+"/api/monitors" # try to create user
-        r = requests.post(signup_url, data={'username': login, 'password': password})
+        signup_url = env["server_address"]+"/api/patients" # try to create user
+        r = requests.post(signup_url, data={'username': login, 'password': password, 'token': os.environ["UMISS_TOKEN"]})
+        print(r.json())
         login_url = env["server_address"]+"/api-auth-token/" # try to login user
         r = requests.post(login_url, data={'username': login, 'password': password})
         for u in sensors:
@@ -66,8 +67,8 @@ def collect_gsr_sensor():
 
 if (register_sensor(sensors)):
     while True:
-        sensors[0].push(collect_temperature_sensor()) # 0
-        sensors[1].push(collect_gsr_sensor()) # 1
+        # sensors[0].push(collect_temperature_sensor()) # 0
+        # sensors[1].push(collect_gsr_sensor()) # 1
         sensors[2].push(collect_fall_sensor()) # 2
 else:
     print("Try again later! >:|")

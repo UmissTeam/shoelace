@@ -14,7 +14,8 @@ class TemperatureSensor(Sensor):
         return 2
 
     def steinhart_hart(self, temp):
-        return (float(temp)*5.0/(65535))/0.01
+        print((float(temp)*5.0/(65535))*1.6/0.01)
+        return (float(temp)*5.0/(65535))*1.6/0.01
 
     def push_callback(self, item):
         item = self.steinhart_hart(item)
@@ -22,11 +23,15 @@ class TemperatureSensor(Sensor):
         if (self.diff(item, self.last_sended) > TemperatureSensor.limiar()):
             item = int(item)
             self.last_sended = item
+            is_critical = False
+            if(item < 35 or item > 39):
+                is_critical = True
             data = {
+                'is_critical': is_critical,
                 'temperature': item
             }
             r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
-            print(r.json())
+
         else:
             print("skip...")
 
@@ -38,26 +43,34 @@ class GRSensor(Sensor):
     """
     @classmethod
     def limiar(cls):
-        return 0
+        return 1 
 
     def normalize(self, item):
         if item <= 20:
+            print("Disconnected")
             return 0 #Disconnected
         elif item >= 20 and item <=210:
+            print("NORMAL")
             return 1 #Normal status
         else:
+            print("ALERT")
             return 2 #Alert status
 
     def push_callback(self, item):
         item = self.normalize(item)
         url = env["server_address"]+"/api/galvanic_resistances"
-        if (self.diff(item, self.last_sended) > GRSensor.limiar()):
+        if (self.last_sended != item):
             print("sending...")
             self.last_sended = item
+            is_critical = False
+            if(item == 2):
+                is_critical = True
             data = {
+                'is_critical': is_critical,
                 'resistance': item
             }
             r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
+            print("R => ", r.json())
         else:
             print("skip...")
 
@@ -89,20 +102,18 @@ class FallSensor(Sensor):
         return 5
 
     def normalize(self, item):
-        if item <= 50:
+        if item > 10000:
             return 1
         else:
             return 0
 
     def push_callback(self, item):
         item = self.normalize(item)
-        # url = env["server_address"]+"/api/heart_beats"
-        # if (self.diff(item, self.last_sended) > HBSensor.limiar()):
-        #     print("sending...")
-        #     self.last_sended = item
-        #     data = {
-        #         'beats': item
-        #     }
-        #     r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
-        # else:
-        #     print("skip...")
+        url = env["server_address"]+"/api/fellchair"
+        if (item == 0 and self.last_sended == 1):
+            print("sending...")
+            #r = requests.post(url, headers={'Authorization': 'Token '+self.token})
+            #print(r)
+        else:
+            print("skip...")
+        self.last_sended = item

@@ -8,7 +8,7 @@ class Sensor(metaclass=ABCMeta):
         (ii) implement limiar and push_callback methods
     """
     def __init__(self):
-        self.last_sended = -1
+        self.last_sended = 0
 
     @classmethod
     @abstractmethod
