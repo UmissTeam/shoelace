@@ -1,4 +1,4 @@
-from shoelace.sensors import TemperatureSensor, GRSensor, HBSensor, FallSensor
+from shoelace.sensors import TemperatureSensor, GRSensor, HBSensor, FallSensor, ECGSensor
 import requests
 import os
 from shoelace.config import env
@@ -33,8 +33,8 @@ def register_sensor(sensors):
 temp_sens = TemperatureSensor()
 grs = GRSensor()
 fall = FallSensor()
-hbs = HBSensor()
-sensors = [temp_sens, grs, fall]
+ecg = ECGSensor()
+sensors = [temp_sens, grs, fall, ecg]
 
 adc = Adafruit_ADS1x15.ADS1115()
 GAIN = 1
@@ -48,6 +48,7 @@ def collect_temperature_sensor():
     lm35_adc_avg = lm35_adc_sum/temperature_samples
     return lm35_adc_avg
 
+
 def collect_fall_sensor():
     fall_sum = 0.0
     samples = 10
@@ -57,6 +58,7 @@ def collect_fall_sensor():
         fall_sum += fall_value
     return fall_sum/samples
 
+
 def collect_gsr_sensor():
     samples = 10
     gsr_sum = 0.0
@@ -65,10 +67,15 @@ def collect_gsr_sensor():
         gsr_sum += gsr_value
     return gsr_sum/samples #Filter average from gsr samples
 
+
+def collect_ecg_sensor():
+    return adc.read_adc(3, gain=2/3)
+
 if (register_sensor(sensors)):
     while True:
         # sensors[0].push(collect_temperature_sensor()) # 0
         # sensors[1].push(collect_gsr_sensor()) # 1
-        sensors[2].push(collect_fall_sensor()) # 2
+        # sensors[2].push(collect_fall_sensor()) # 2
+        sensors[3].push(collect_ecg_sensor()) # 3
 else:
     print("Try again later! >:|")
