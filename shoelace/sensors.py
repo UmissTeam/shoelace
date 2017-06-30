@@ -163,7 +163,7 @@ class ECGSensor(Sensor):
 
                 if self.first_beat:                       # if it's the first time we found a beat, if firstBeat == TRUE
                     self.first_beat = False;              # clear firstBeat flag
-                    self.second_beat = True;              # set the second beat flag
+                    self.second_beat = True;              # set the second beat flag 
                     return
 
                 # keep a running total of the last 10 IBI values
@@ -175,9 +175,9 @@ class ECGSensor(Sensor):
                 self.bpm = 60000/self.running_total # how many beats can fit into a minute? that's BPM!
 
         if item < self.thresh and self.pulse == True:       # when the values are going down, the beat is over
-            pulse = False                           # reset the Pulse flag so we can do it again
-            self.amp = self.peak - self.through                             # get amplitude of the pulse wave
-            self.thresh = amp/2 + self.trough                      # set thresh at 50% of the amplitude
+            self.pulse = False                           # reset the Pulse flag so we can do it again
+            self.amp = self.peak - self.trough                             # get amplitude of the pulse wave
+            self.thresh = self.amp/2 + self.trough                      # set thresh at 50% of the amplitude
             self.peak = self.thresh                              # reset these for next time
             self.trough = self.thresh
 
@@ -191,6 +191,6 @@ class ECGSensor(Sensor):
             self.bpm = 0
 
         if self.bpm > 0:
-            print("BPM: %d" % bpm)
+            print("BPM: %d" % self.bpm)
         else:
             print("No heartbeat found")
