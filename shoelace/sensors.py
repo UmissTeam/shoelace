@@ -50,7 +50,7 @@ class GRSensor(Sensor):
         if item <= 20:
             print("Disconnected")
             return 0 #Disconnected
-        elif item >= 20 and item <=210:
+        elif item >= 20 and item <=20000:
             print("NORMAL")
             return 1 #Normal status
         else:
@@ -113,7 +113,7 @@ class FallSensor(Sensor):
         url = env["server_address"]+"/api/fellchair"
         if (item == 0 and self.last_sended == 1):
             print("sending...")
-            #r = requests.post(url, headers={'Authorization': 'Token '+self.token})
+            r = requests.post(url, headers={'Authorization': 'Token '+self.token})
             #print(r)
         else:
             print("skip...")
@@ -140,6 +140,7 @@ class ECGSensor(Sensor):
         return 5
 
     def push_callback(self, item):
+        url = env["server_address"]+"/api/heart_beats"
         current_time = int(time.time()*1000)
         self.sample_counter += current_time - self.last_time
         self.last_time = current_time
@@ -192,5 +193,10 @@ class ECGSensor(Sensor):
 
         if self.bpm > 0:
             print("BPM: %d" % self.bpm)
+            data = {
+                'beats': int(self.bpm)
+            }
+            r = requests.post(url, headers={'Authorization': 'Token '+self.token}, data=data)
+            print(r.json())
         else:
             print("No heartbeat found")
